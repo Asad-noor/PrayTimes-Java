@@ -23,20 +23,20 @@ PLEASE DO NOT REMOVE THIS COPYRIGHT BLOCK.
 */
 package com.metinkale.praytime;
 
-import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import static com.metinkale.praytime.Constants.*;
 import static java.lang.Double.isNaN;
 
 
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class PrayTime {
-    private double lat, lng, elv;//cordinates;
+    private double lat, lng, elv;
     private double jDate;
 
     private Parameters params = new Parameters();
     private double timezone = 0;
-
-    private Method method;
 
     public PrayTime(double lat, double lng, double elv) {
         this.lat = lat;
@@ -53,7 +53,7 @@ public class PrayTime {
      * @return array of Times
      */
     public String[] getTimes(int year, int month, int day) {
-        timezone = params.timeZone.getOffset(new Date(year, month, day).getTime()) / 1000 / 60 / 60.0;
+        timezone = params.timeZone.getOffset(new GregorianCalendar(year, month, day).getTimeInMillis()) / 1000 / 60 / 60.0;
         double[] doubles = getTimesAsDouble(year, month, day);
         String[] strings = new String[doubles.length];
         for (int i = 0; i < strings.length; i++) {
@@ -74,23 +74,14 @@ public class PrayTime {
      */
     public synchronized double[] getTimesAsDouble(int year, int month, int day) {
         jDate = julian(year, month, day) - lng / (15.0 * 24.0);
-        return this.computeTimes();
+        return tune(this.computeTimes());
     }
 
-
-    public Method getMethod() {
-        return method;
-    }
-
-    public void setMethod(Method method) {
-        this.method = method;
-        params = new Parameters();
-        params.fajr = method.fajr;
-        params.isha = method.isha;
-        params.maghrib = method.maghrib;
-        params.maghribMin = method.maghribMin;
-        params.ishaMin = method.maghribMin;
-        params.midnight = method.midnight;
+    private double[] tune(double[] times) {
+        for (int i = 0; i < times.length; i++) {
+            times[i] += params.tune[i];
+        }
+        return times;
     }
 
 
@@ -132,7 +123,7 @@ public class PrayTime {
      */
     private double[] computeTimes() {
         // default times
-        double[] times = {5, 5, 6, 12, 13, 18, 18, 18, 0};
+        double[] times = {5, 5, 6, 12, 12, 13, 18, 18, 18, 0};
 
         times = this.computePrayerTimes(times);
 
@@ -177,7 +168,7 @@ public class PrayTime {
             times[TIMES_MAGHRIB] = times[TIMES_SUNSET] + (params.maghrib) / 60.0;
         if (params.ishaMin)
             times[TIMES_ISHA] = times[TIMES_MAGHRIB] + (params.isha) / 60.0;
-        times[TIMES_DHUHR] += (params.dhuhr) / 60.0;
+        times[TIMES_DHUHR] = times[TIMES_ZAWAL] + (params.dhuhr) / 60.0;
 
         return times;
     }
@@ -229,9 +220,9 @@ public class PrayTime {
     private double nightPortion(double angle, double night) {
         double method = params.highLats;
         double portion = 1.0 / 2.0;// MidNight
-        if (method == HIGHLAT_AngleBased)
+        if (method == HIGHLAT_ANGLEBASED)
             portion = 1.0 / 60.0 * angle;
-        if (method == HIGHLAT_OneSeventh)
+        if (method == HIGHLAT_ONESEVENTH)
             portion = 1.0 / 7.0;
         return portion * night;
     }
@@ -251,14 +242,14 @@ public class PrayTime {
         double imsak = this.sunAngleTime((params.imsak), times[TIMES_IMSAK], true);
         double fajr = this.sunAngleTime((params.fajr), times[TIMES_FAJR], true);
         double sunrise = this.sunAngleTime(this.riseSetAngle(), times[TIMES_SUNRISE], true);
-        double dhuhr = this.midDay(times[TIMES_DHUHR]);
+        double zawal = this.midDay(times[TIMES_ZAWAL]);
         double asr = this.asrTime(params.asrJuristic, times[TIMES_ASR]);
         double sunset = this.sunAngleTime(this.riseSetAngle(), times[TIMES_SUNSET], false);
         double maghrib = this.sunAngleTime((params.maghrib), times[TIMES_MAGHRIB], false);
         double isha = this.sunAngleTime((params.isha), times[TIMES_MAGHRIB], false);
 
         return new double[]{
-                imsak, fajr, sunrise, dhuhr,
+                imsak, fajr, sunrise, zawal, zawal,
                 asr, sunset, maghrib, isha, 0
         };
     }
@@ -274,6 +265,23 @@ public class PrayTime {
         double decl = this.sunPositionDeclination(jDate + time);
         double angle = -DMath.arccot(factor + DMath.tan(Math.abs(lat - decl)));
         return this.sunAngleTime(angle, time, false);
+    }
+
+
+    /**
+     * compute the time at which sun reaches a specific angle below horizon
+     *
+     * @param angle angle
+     * @param time  default time
+     * @param ccw   true if counter-clock-wise, false otherwise
+     * @return time
+     */
+    private double sunAngleTime(double angle, double time, boolean ccw) {
+        double decl = this.sunPositionDeclination(jDate + time);
+        double noon = this.midDay(time);
+        double t = 1.0 / 15.0 * DMath.arccos((-DMath.sin(angle) - DMath.sin(decl) * DMath.sin(lat)) /
+                (DMath.cos(decl) * DMath.cos(lat)));
+        return noon + (ccw ? -t : t);
     }
 
     /**
@@ -320,21 +328,6 @@ public class PrayTime {
         return DMath.arcsin(DMath.sin(e) * DMath.sin(L));
     }
 
-    /**
-     * compute the time at which sun reaches a specific angle below horizon
-     *
-     * @param angle angle
-     * @param time  default time
-     * @param ccw   true if counter-clock-wise, false otherwise
-     * @return time
-     */
-    private double sunAngleTime(double angle, double time, boolean ccw) {
-        double decl = this.sunPositionDeclination(jDate + time);
-        double noon = this.midDay(time);
-        double t = 1.0 / 15.0 * DMath.arccos((-DMath.sin(angle) - DMath.sin(decl) * DMath.sin(lat)) /
-                (DMath.cos(decl) * DMath.cos(lat)));
-        return noon + (ccw ? -t : t);
-    }
 
     /**
      * compute sun angle for sunset/sunrise
@@ -348,5 +341,155 @@ public class PrayTime {
         return 0.833 + angle;
     }
 
+
+    /**
+     * Sets the calculation method
+     * Attention: overrides all other parameters, set this as first
+     * Default: MWL
+     *
+     * @param method calculation method
+     */
+    public void setMethod(Method method) {
+        this.params = new Parameters(method);
+    }
+
+    /**
+     * Sets Imsak time in Degrees/Mins before Fajr
+     *
+     * @param value degrees/mins
+     * @param isMin true if value is in mins, false if it is in degreess
+     */
+    public void setImsakTime(double value, boolean isMin) {
+        params.imsak = value;
+        params.imsakMin = isMin;
+    }
+
+    /**
+     * Sets Fajr time degrees
+     *
+     * @param degrees degrees
+     */
+    public void setFajrDegrees(double degrees) {
+        params.fajr = degrees;
+    }
+
+
+    /**
+     * Sets Dhuhr time in mins after zawal/solar noon
+     *
+     * @param mins minutes
+     */
+    public void setDhuhrMins(double mins) {
+        params.dhuhr = mins;
+    }
+
+    /**
+     * Sets Maghrib time in Degrees/Mins after Sunset
+     *
+     * @param value degrees/mins
+     * @param isMin true if value is in mins, false if it is in degreess
+     */
+    public void setMaghribTime(double value, boolean isMin) {
+        params.maghrib = value;
+        params.maghribMin = isMin;
+    }
+
+
+    /**
+     * Sets Isha time in Degrees or Mins after Sunset
+     *
+     * @param value degrees/mins
+     * @param isMin true if value is in mins, false if it is in degreess
+     */
+    public void setIshaTime(double value, boolean isMin) {
+        params.isha = value;
+        params.ishaMin = isMin;
+    }
+
+    /**
+     * In locations at higher latitude, twilight may persist throughout the night during some months of the year.
+     * In these abnormal periods, the determination of Fajr and Isha is not possible using the usual formulas mentioned
+     * in the previous section. To overcome this problem, several solutions have been proposed,
+     * three of which are described below.
+     * <p>
+     * {@link Constants#HIGHLAT_NONE HIGHLAT_NONE} (Default)
+     * {@link Constants#HIGHLAT_NIGHTMIDDLE HIGHLAT_NIGHTMIDDLE}
+     * {@link Constants#HIGHLAT_ONESEVENTH HIGHLAT_ONESEVENTH}
+     * {@link Constants#HIGHLAT_ONESEVENTH HIGHLAT_ONESEVENTH}
+     *
+     * @param method method
+     */
+    public void setHighLatsAdjustment(int method) {
+
+        params.highLats = method;
+    }
+
+    /**
+     * Midnight is generally calculated as the mean time from Sunset to Sunrise, i.e., Midnight = 1/2(Sunrise - Sunset).
+     * In Shia point of view, the juridical midnight (the ending time for performing Isha prayer) is the mean time
+     * from Sunset to Fajr, i.e., Midnight = 1/2(Fajr - Sunset).
+     * <p>
+     * {@link Constants#MIDNIGHT_STANDARD MIDNIGHT_STANDARD} (Default)
+     * {@link Constants#MIDNIGHT_JAFARI MIDNIGHT_JAFARI}
+     *
+     * @param mode mode
+     */
+    public void setMidnightMode(int mode) {
+        params.midnight = mode;
+    }
+
+    /**
+     * TimeZone for times
+     * <p>
+     * Default: {@link TimeZone#getDefault() TimeZone.getDefault()}
+     *
+     * @param tz
+     */
+    public void setTimezone(TimeZone tz) {
+        params.timeZone = tz;
+    }
+
+    /**
+     * There are two main opinions on how to calculate Asr time.
+     * <p>
+     * {@link Constants#JURISTIC_STANDARD JURISTIC_STANDARD}
+     * {@link Constants#JURISTIC_HANAFI JURISTIC_HANAFI}
+     * <p>
+     * Default: {@link Constants#JURISTIC_STANDARD JURISTIC_STANDARD}
+     *
+     * @param asr method
+     */
+    public void setAsrJuristic(int asr) {
+        params.asrJuristic = asr;
+    }
+
+    /**
+     * tune all times (+-). In Hours
+     *
+     * @param imsak    Imsak Time+-
+     * @param fajr     Fajr Time+-
+     * @param sunrise  Sunrise+-
+     * @param zawal    Zawal+-
+     * @param dhuhr    Dhuhr+-
+     * @param asr      Asr+-
+     * @param sunset   Sunset+-
+     * @param maghrib  Maghrib+-
+     * @param isha     Isha+-
+     * @param midnight Midnight+-
+     */
+    public void tune(double imsak, double fajr, double sunrise, double zawal, double dhuhr, double asr,
+                     double sunset, double maghrib, double isha, double midnight) {
+        params.tune = new double[]{imsak, fajr, sunrise, zawal, dhuhr, asr, sunset, maghrib, isha, midnight};
+    }
+
+    /**
+     * tune single time
+     *
+     * @param time time
+     * @param tune hours
+     */
+    public void tune(int time, double tune) {
+        params.tune[time] = tune;
+    }
 
 }

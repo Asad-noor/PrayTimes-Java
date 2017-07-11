@@ -33,21 +33,20 @@ import static com.metinkale.praytime.Constants.JURISTIC_STANDARD;
  */
 @SuppressWarnings("WeakerAccess")
 public class Parameters {
-    public Method method;
-    public boolean imsakMin, maghribMin, ishaMin;//if true double values are in minutes, otherwhise in degrees
+    protected boolean imsakMin, maghribMin, ishaMin;//if true double values are in minutes, otherwhise in degrees
     //dhuhr is always in min, fajr is always in degrees
-    public double imsak, fajr, dhuhr, isha, maghrib;
-    public int highLats;
-    public int midnight;
-    public TimeZone timeZone;
-    public int asrJuristic;
+    protected double imsak, fajr, dhuhr, maghrib, isha;
+    protected int highLats;
+    protected int midnight;
+    protected TimeZone timeZone;
+    protected int asrJuristic;
+    protected double[] tune = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    public Parameters() {
+    protected Parameters() {
         this(Method.MWL);
     }
 
-    public Parameters(Method method) {
-        this.method = method;
+    protected Parameters(Method method) {
         imsak = 10;
         imsakMin = true;
         fajr = method.fajr;
