@@ -1,0 +1,13 @@
+group 'com.metinkale.praytime'
+version '2.3'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+}
