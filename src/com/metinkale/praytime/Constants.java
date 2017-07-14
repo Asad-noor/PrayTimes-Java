@@ -121,4 +121,9 @@ public class Constants {
      * The mean time from sunset to sunrise (or from Maghrib to Fajr, in some schools of thought).
      */
     public static final int TIMES_MIDNIGHT = 9;
+    /**
+     * If you turn yourself to the sun at that time, you are turned to qibla
+     * Note: does not exists everywhere
+     */
+    public static final int TIMES_QIBLATIME = 10;
 }

@@ -23,6 +23,7 @@ PLEASE DO NOT REMOVE THIS COPYRIGHT BLOCK.
 */
 package com.metinkale.praytime;
 
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
@@ -53,12 +54,11 @@ public class PrayTime {
      * @return array of Times
      */
     public String[] getTimes(int year, int month, int day) {
-        timezone = params.timeZone.getOffset(new GregorianCalendar(year, month, day).getTimeInMillis()) / 1000 / 60 / 60.0;
         double[] doubles = getTimesAsDouble(year, month, day);
         String[] strings = new String[doubles.length];
         for (int i = 0; i < strings.length; i++) {
             if (doubles[i] > 24) doubles[i] -= 24;
-            strings[i] = az((int) doubles[i]) + ":" + az((int) (doubles[i] % 1 * 60));
+            strings[i] = az((int) doubles[i]) + ":" + az((int) Math.round(doubles[i] * 60 % 60));
         }
         return strings;
     }
@@ -72,9 +72,31 @@ public class PrayTime {
      * @param day   Day
      * @return array of Times
      */
-    public synchronized double[] getTimesAsDouble(int year, int month, int day) {
+    private synchronized double[] getTimesAsDouble(int year, int month, int day) {
+        timezone = params.timeZone.getOffset(new GregorianCalendar(year, month - 1, day).getTimeInMillis()) / 1000 / 60 / 60.0;
         jDate = julian(year, month, day) - lng / (15.0 * 24.0);
-        return tune(this.computeTimes());
+        double times[] = this.computeTimes();
+        calculateQiblaTime(times, year, month, day);
+        return tune(times);
+    }
+
+    /**
+     * Calculates the qibla time, if you turn yourself to the sun at that time, you are turned to qibla
+     * Note: does not exists everywhere
+     * @param times times array
+     * @param year  year
+     * @param month month
+     * @param day   day
+     */
+    private void calculateQiblaTime(double times[], int year, int month, int day) {
+        long mills = QiblaTimeCalculator.findQiblaTime(new GregorianCalendar(year, month - 1, day, 12, 0, 0).getTimeInMillis(), lat, lng);
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(mills);
+        times[TIMES_QIBLATIME] = cal.get(Calendar.HOUR_OF_DAY)
+                + cal.get(Calendar.MINUTE) / 60d
+                + cal.get(Calendar.SECOND) / 3600d;
+        if (times[TIMES_QIBLATIME] < times[TIMES_SUNRISE] || times[TIMES_QIBLATIME] > times[TIMES_SUNSET])
+            times[TIMES_QIBLATIME] = 0;
     }
 
     private double[] tune(double[] times) {
@@ -105,7 +127,7 @@ public class PrayTime {
      * @param day   day
      * @return julian day
      */
-    private double julian(int year, int month, int day) {
+    private static double julian(int year, int month, int day) {
         if (month <= 2) {
             year -= 1;
             month += 12;
@@ -123,7 +145,7 @@ public class PrayTime {
      */
     private double[] computeTimes() {
         // default times
-        double[] times = {5, 5, 6, 12, 12, 13, 18, 18, 18, 0};
+        double[] times = {5, 5, 6, 12, 12, 13, 18, 18, 18, 0, 0};
 
         times = this.computePrayerTimes(times);
 
@@ -250,7 +272,7 @@ public class PrayTime {
 
         return new double[]{
                 imsak, fajr, sunrise, zawal, zawal,
-                asr, sunset, maghrib, isha, 0
+                asr, sunset, maghrib, isha, 0, 0
         };
     }
 
@@ -478,8 +500,8 @@ public class PrayTime {
      * @param midnight Midnight+-
      */
     public void tune(double imsak, double fajr, double sunrise, double zawal, double dhuhr, double asr,
-                     double sunset, double maghrib, double isha, double midnight) {
-        params.tune = new double[]{imsak, fajr, sunrise, zawal, dhuhr, asr, sunset, maghrib, isha, midnight};
+                     double sunset, double maghrib, double isha, double midnight, double qiblatime) {
+        params.tune = new double[]{imsak, fajr, sunrise, zawal, dhuhr, asr, sunset, maghrib, isha, midnight, qiblatime};
     }
 
     /**
