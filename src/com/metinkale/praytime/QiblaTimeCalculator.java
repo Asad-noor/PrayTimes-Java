@@ -1,6 +1,129 @@
+/*
+ PrayTimes-Java: Prayer Times Java Calculator (ver 0.9)
+
+ Copyright (C) 2017 Metin Kale (Java Code)
+
+ Developer Java: Metin Kale
+
+ License: GNU LGPL v3.0
+
+ TERMS OF USE:
+ 	Permission is granted to use this code, with or
+  	without modification, in any website or application
+ 	provided that credit is given to the original work
+ 	with a link back to PrayTimes.org.
+
+ This program is distributed in the hope that it will
+ be useful, but WITHOUT ANY WARRANTY.
+
+ PLEASE DO NOT REMOVE THIS COPYRIGHT BLOCK.
+ ------------------------------------------
+ The Qibla Time calculations uses calculations from this Library: https://github.com/mncaudill/SunCalc-Java/
+ which is a Java Port from this JS Library: https://github.com/mourner/suncalc
+
+ Author Java-Port: Nolan Caudill
+ Author JS-Library: Vladimir Agafonkin
+ Original Licence: BSD
+ From JS-Library:
+     (c) 2011-2015, Vladimir Agafonkin
+     SunCalc is a JavaScript library for calculating sun/moon position and light phases.
+     https://github.com/mourner/suncalc
+ */
 package com.metinkale.praytime;
 
-public class QiblaTimeCalculator {
+
+/**
+ * calculates qibla angle based on location and date
+ * <p>
+ * Note: might be a inefficient solution (searching for correct angle in loop), but you are welcome to help me improving it
+ * i do not have enough knowledge in this field, so i had to use existing codes for the sun azimuth calculation
+ */
+class QiblaTimeCalculator {
+
+    //==========================Qibla Calculation Code==========================
+
+    /**
+     * calculates the qibla angle, for looking to the sun, or turning away from sun
+     *
+     * @param mills     time
+     * @param lat       latitude
+     * @param lng       longitude
+     * @param direction 0: qibla on sun direction,
+     *                  +-PI/2: qibla on left, when looking at sun,
+     *                  wPI: qibla on front of person, if he turns back from the sun
+     * @return time
+     */
+    static long findQiblaTime(long mills, double lat, double lng, double direction) {
+        long inputMills = mills;
+        double angle = getAngle(lat, lng);
+        if (direction != 0)
+            angle = (angle + direction) % (2 * Math.PI);
+
+        double azimuth = 0;
+        double last = 0;
+        double add = 1;
+        int i = 0;
+        while (Math.abs(angle - azimuth) > 0.0001) {
+            azimuth = Math.PI + getAzimuth(mills, lat, lng);
+            if ((azimuth > angle && angle > last) || (last > angle && angle > azimuth)) {
+                add *= -0.5;
+            }
+            if (azimuth == last) {
+                return 0;
+            }
+            mills += (int) (add * 10000000);
+            last = azimuth;
+            i++;
+            if (i > 100 || Math.abs(inputMills - mills) > 1000 * 60 * 60 * 24) {
+                return 0;
+            }
+        }
+
+        return mills;
+    }
+
+
+    /**
+     * get angle to mecca
+     *
+     * @param lat1 Latitude
+     * @param lng1 Longitude
+     * @return angle to mecca
+     */
+    private static double getAngle(double lat1, double lng1) {
+        double lat2 = 21.42247;// Latitude of Mecca (+21.45° north of Equator)
+        double lng2 = 39.826198;// Longitude of Mecca (-39.75° east of Prime
+
+        return -getDirection(lat1, lng1, lat2, lng2);
+    }
+
+    /**
+     * get radial angle between two points
+     *
+     * @param lat1 Latitude 1
+     * @param lng1 Longitude 1
+     * @param lat2 Latitude 2
+     * @param lng2 Longitude 2
+     * @return angle
+     */
+    private static double getDirection(double lat1, double lng1, double lat2, double lng2) {
+        double dLng = lng1 - lng2;
+        return getDirectionRad(Math.toRadians(lat1), Math.toRadians(lat2), Math.toRadians(dLng));
+    }
+
+    /**
+     * get angle between two points in degrees
+     *
+     * @param lat1 Latitude 1
+     * @param lat2 Latitude 2
+     * @param dLng Longitude distance
+     * @return angle
+     */
+    private static double getDirectionRad(double lat1, double lat2, double dLng) {
+        return Math.atan2(Math.sin(dLng), (Math.cos(lat1) * Math.tan(lat2)) - (Math.sin(lat1) * Math.cos(dLng)));
+    }
+
+    //==========================Code from SunCalc Library==========================
 
     /* Constants */
     private final static double rad = Math.PI / 180;
@@ -53,8 +176,8 @@ public class QiblaTimeCalculator {
     }
 
 
-    private static double getPosition(long mills, double lat,
-                                      double lng) {
+    private static double getAzimuth(long mills, double lat,
+                                     double lng) {
         double lw = rad * -lng;
         double phi = rad * lat;
         double J = dateToJulianDate(mills);
@@ -67,46 +190,5 @@ public class QiblaTimeCalculator {
         double H = th - a;
 
         return getAzimuth(H, phi, d);
-    }
-
-    protected static long findQiblaTime(long mills, double lat, double lng) {
-        double angle = getAngle(lat, lng);
-        double azimuth = angle - 1;
-        double last = 0;
-        double add = 1;
-        int i = 0;
-        while (Math.abs(angle - azimuth) > 0.0001) {
-            azimuth = Math.PI + QiblaTimeCalculator.getPosition(mills, lat, lng);
-            if ((azimuth > angle && angle > last) || (last > angle && angle > azimuth)) {
-                add *= -0.5;
-            }
-            //   System.out.println(Math.toDegrees(angle) + " " + Math.toDegrees(azimuth) + " " + new Date(mills).toGMTString());
-            if (azimuth == last) {
-                return 0;
-            }
-            mills += (int) (add * 10000000);
-            last = azimuth;
-            i++;
-            if (i > 100) return 0;
-        }
-        //  System.out.println(i);
-
-        return mills;
-    }
-
-    private static double getAngle(double lat1, double lng1) {
-        double lat2 = 21.42247;// Latitude of Mecca (+21.45° north of Equator)
-        double lng2 = 39.826198;// Longitude of Mecca (-39.75° east of Prime
-
-        return -getDirection(lat1, lng1, lat2, lng2);
-    }
-
-    private static double getDirection(double lat1, double lng1, double lat2, double lng2) {
-        double dLng = lng1 - lng2;
-        return getDirectionRad(Math.toRadians(lat1), Math.toRadians(lat2), Math.toRadians(dLng));
-    }
-
-    private static double getDirectionRad(double lat1, double lat2, double dLng) {
-        return Math.atan2(Math.sin(dLng), (Math.cos(lat1) * Math.tan(lat2)) - (Math.sin(lat1) * Math.cos(dLng)));
     }
 }

@@ -1,7 +1,7 @@
 /*
+PrayTimes-Java: Prayer Times Java Calculator (ver 0.9)
 
-PrayTimes.java: Prayer Times Calculator (ver 2.3)
-Copyright (C) 2007-2011 PrayTimes.org (JS Code)
+Copyright (C) 2007-2011 PrayTimes.org (JS Code ver 2.3)
 Copyright (C) 2017 Metin Kale (Java Code)
 
 Developer JS: Hamid Zarrabi-Zadeh
@@ -23,16 +23,17 @@ PLEASE DO NOT REMOVE THIS COPYRIGHT BLOCK.
 */
 package com.metinkale.praytime;
 
+import java.io.Serializable;
 import java.util.TimeZone;
 
 import static com.metinkale.praytime.Constants.HIGHLAT_NONE;
 import static com.metinkale.praytime.Constants.JURISTIC_STANDARD;
 
 /**
- * Configuration for PrayTime
+ * Configuration for PrayTimes
  */
 @SuppressWarnings("WeakerAccess")
-public class Parameters {
+public class Parameters implements Serializable {
     protected boolean imsakMin, maghribMin, ishaMin;//if true double values are in minutes, otherwhise in degrees
     //dhuhr is always in min, fajr is always in degrees
     protected double imsak, fajr, dhuhr, maghrib, isha;
@@ -40,7 +41,7 @@ public class Parameters {
     protected int midnight;
     protected TimeZone timeZone;
     protected int asrJuristic;
-    protected double[] tune = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    protected double[] tune = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     protected Parameters() {
         this(Method.MWL);
@@ -54,7 +55,7 @@ public class Parameters {
         isha = method.isha;
         maghrib = method.maghrib;
         maghribMin = method.maghribMin;
-        ishaMin = method.maghribMin;
+        ishaMin = method.ishaMin;
         midnight = method.midnight;
         highLats = HIGHLAT_NONE;
         timeZone = TimeZone.getDefault();

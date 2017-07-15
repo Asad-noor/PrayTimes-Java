@@ -1,7 +1,7 @@
 /*
+PrayTimes-Java: Prayer Times Java Calculator (ver 0.9)
 
-PrayTimes.java: Prayer Times Calculator (ver 2.3)
-Copyright (C) 2007-2011 PrayTimes.org (JS Code)
+Copyright (C) 2007-2011 PrayTimes.org (JS Code ver 2.3)
 Copyright (C) 2017 Metin Kale (Java Code)
 
 Developer JS: Hamid Zarrabi-Zadeh

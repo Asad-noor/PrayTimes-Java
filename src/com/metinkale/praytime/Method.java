@@ -1,7 +1,7 @@
 /*
+PrayTimes-Java: Prayer Times Java Calculator (ver 0.9)
 
-PrayTimes.java: Prayer Times Calculator (ver 2.3)
-Copyright (C) 2007-2011 PrayTimes.org (JS Code)
+Copyright (C) 2007-2011 PrayTimes.org (JS Code ver 2.3)
 Copyright (C) 2017 Metin Kale (Java Code)
 
 Developer JS: Hamid Zarrabi-Zadeh
@@ -35,23 +35,23 @@ public enum Method {
     /**
      * Muslim World League
      */
-    MWL(18, 0, false, 17, false, MIDNIGHT_STANDARD),
+    MWL(18, 0, true, 17, false, MIDNIGHT_STANDARD),
     /**
      * Islamic Society of North America (ISNA)
      */
-    ISNA(15, 0, false, 15, false, MIDNIGHT_STANDARD),
+    ISNA(15, 0, true, 15, false, MIDNIGHT_STANDARD),
     /**
      * Egyptian General Authority of Survey
      */
-    Egypt(19.5, 0, false, 17.5, false, MIDNIGHT_STANDARD),
+    Egypt(19.5, 0, true, 17.5, false, MIDNIGHT_STANDARD),
     /**
      * Umm Al-Qura University, Makkah
      */
-    Makkah(18.5, 0, false, 90, true, MIDNIGHT_STANDARD),
+    Makkah(18.5, 0, true, 90, true, MIDNIGHT_STANDARD),
     /**
      * University of Islamic Sciences, Karachi
      */
-    Karachi(18, 0, false, 18, false, MIDNIGHT_STANDARD),
+    Karachi(18, 0, true, 18, false, MIDNIGHT_STANDARD),
     /**
      * Institute of Geophysics, University of Tehran
      */

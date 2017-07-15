@@ -1,7 +1,7 @@
 /*
+PrayTimes-Java: Prayer Times Java Calculator (ver 0.9)
 
-PrayTimes.java: Prayer Times Calculator (ver 2.3)
-Copyright (C) 2007-2011 PrayTimes.org (JS Code)
+Copyright (C) 2007-2011 PrayTimes.org (JS Code ver 2.3)
 Copyright (C) 2017 Metin Kale (Java Code)
 
 Developer JS: Hamid Zarrabi-Zadeh
@@ -25,7 +25,9 @@ PLEASE DO NOT REMOVE THIS COPYRIGHT BLOCK.
 package com.metinkale.praytime;
 
 
-@SuppressWarnings("WeakerAccess")
+/**
+ * Constants for PrayTimes
+ */
 public class Constants {
     /**
      * Asr Juristic Methods
@@ -121,9 +123,4 @@ public class Constants {
      * The mean time from sunset to sunrise (or from Maghrib to Fajr, in some schools of thought).
      */
     public static final int TIMES_MIDNIGHT = 9;
-    /**
-     * If you turn yourself to the sun at that time, you are turned to qibla
-     * Note: does not exists everywhere
-     */
-    public static final int TIMES_QIBLATIME = 10;
 }
