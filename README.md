@@ -22,11 +22,14 @@ This Library contains 4 types of Qibla time:
 
 ## License
 
-PrayTimes.java: Prayer Times Calculator (ver 2.3)
-Copyright (C) 2007-2011 PrayTimes.org (JS Code)
+PrayTimes-Java: Prayer Times Java Calculator (ver 0.9)
+
+Copyright (C) 2007-2011 PrayTimes.org (JS Code ver 2.3)
+
 Copyright (C) 2017 Metin Kale (Java Code)
 
 Developer JS: Hamid Zarrabi-Zadeh
+
 Developer Java: Metin Kale
 
 License: GNU LGPL v3.0
@@ -41,3 +44,11 @@ This program is distributed in the hope that it will
 be useful, but WITHOUT ANY WARRANTY.
 
 PLEASE DO NOT REMOVE THIS COPYRIGHT BLOCK.
+
+#####Other Libraries used
+SunCalc Java Port (Author Java-Port: Nolan Caudill)
+Original License: BSD
+
+(c) 2011-2015, Vladimir Agafonkin
+
+SunCalc is a JavaScript library for calculating sun/moon position and light phases.
