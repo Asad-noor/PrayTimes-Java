@@ -29,7 +29,7 @@
      SunCalc is a JavaScript library for calculating sun/moon position and light phases.
      https://github.com/mourner/suncalc
  */
-package com.metinkale.praytime;
+package org.metinkale.praytimes;
 
 
 /**

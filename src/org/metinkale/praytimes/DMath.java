@@ -21,7 +21,7 @@ be useful, but WITHOUT ANY WARRANTY.
 PLEASE DO NOT REMOVE THIS COPYRIGHT BLOCK.
 
 */
-package com.metinkale.praytime;
+package org.metinkale.praytimes;
 
 /**
  * Degree-Based Math Class

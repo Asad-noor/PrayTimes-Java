@@ -22,7 +22,7 @@ PLEASE DO NOT REMOVE THIS COPYRIGHT BLOCK.
 
 */
 
-package com.metinkale.praytime;
+package org.metinkale.praytimes;
 
 
 /**

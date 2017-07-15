@@ -21,14 +21,13 @@ be useful, but WITHOUT ANY WARRANTY.
 PLEASE DO NOT REMOVE THIS COPYRIGHT BLOCK.
 
 */
-package com.metinkale.praytime;
+package org.metinkale.praytimes;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-import static com.metinkale.praytime.Constants.*;
 import static java.lang.Double.isNaN;
 
 
@@ -167,7 +166,7 @@ public class PrayTimes implements Serializable {
             qiblaD[i] = cal.get(Calendar.HOUR_OF_DAY)
                     + cal.get(Calendar.MINUTE) / 60d
                     + cal.get(Calendar.SECOND) / 3600d;
-            if (qiblaD[i] < mTimes[TIMES_SUNRISE] || qiblaD[i] > mTimes[TIMES_SUNSET]) {
+            if (qiblaD[i] < mTimes[Constants.TIMES_SUNRISE] || qiblaD[i] > mTimes[Constants.TIMES_SUNSET]) {
                 qiblaD[i] = 0;
                 qiblaS[i] = null;
             } else {
@@ -227,9 +226,9 @@ public class PrayTimes implements Serializable {
         adjustTimes();
 
         // add midnight time
-        mTimes[TIMES_MIDNIGHT] = (mParams.midnight == MIDNIGHT_JAFARI) ?
-                mTimes[TIMES_SUNSET] + this.timeDiff(mTimes[TIMES_SUNSET], mTimes[TIMES_FAJR]) / 2.0 :
-                mTimes[TIMES_SUNSET] + this.timeDiff(mTimes[TIMES_SUNSET], mTimes[TIMES_FAJR]) / 2.0;
+        mTimes[Constants.TIMES_MIDNIGHT] = (mParams.midnight == Constants.MIDNIGHT_JAFARI) ?
+                mTimes[Constants.TIMES_SUNSET] + this.timeDiff(mTimes[Constants.TIMES_SUNSET], mTimes[Constants.TIMES_FAJR]) / 2.0 :
+                mTimes[Constants.TIMES_SUNSET] + this.timeDiff(mTimes[Constants.TIMES_SUNSET], mTimes[Constants.TIMES_FAJR]) / 2.0;
 
     }
 
@@ -253,28 +252,28 @@ public class PrayTimes implements Serializable {
             mTimes[i] += offset - mLng / 15.0;
         }
 
-        if (mParams.highLats != HIGHLAT_NONE)
+        if (mParams.highLats != Constants.HIGHLAT_NONE)
             adjustHighLats();
 
         if (mParams.imsakMin)
-            mTimes[TIMES_IMSAK] = mTimes[TIMES_FAJR] - (mParams.imsak) / 60.0;
+            mTimes[Constants.TIMES_IMSAK] = mTimes[Constants.TIMES_FAJR] - (mParams.imsak) / 60.0;
         if (mParams.maghribMin)
-            mTimes[TIMES_MAGHRIB] = mTimes[TIMES_SUNSET] + (mParams.maghrib) / 60.0;
+            mTimes[Constants.TIMES_MAGHRIB] = mTimes[Constants.TIMES_SUNSET] + (mParams.maghrib) / 60.0;
         if (mParams.ishaMin)
-            mTimes[TIMES_ISHA] = mTimes[TIMES_MAGHRIB] + (mParams.isha) / 60.0;
-        mTimes[TIMES_DHUHR] = mTimes[TIMES_ZAWAL] + (mParams.dhuhr) / 60.0;
+            mTimes[Constants.TIMES_ISHA] = mTimes[Constants.TIMES_MAGHRIB] + (mParams.isha) / 60.0;
+        mTimes[Constants.TIMES_DHUHR] = mTimes[Constants.TIMES_ZAWAL] + (mParams.dhuhr) / 60.0;
     }
 
     /**
      * adjust times for locations in higher latitudes
      */
     private void adjustHighLats() {
-        double nightTime = this.timeDiff(mTimes[TIMES_SUNSET], mTimes[TIMES_SUNRISE]);
+        double nightTime = this.timeDiff(mTimes[Constants.TIMES_SUNSET], mTimes[Constants.TIMES_SUNRISE]);
 
-        mTimes[TIMES_IMSAK] = this.adjustHLTime(mTimes[TIMES_IMSAK], mTimes[TIMES_SUNRISE], (mParams.imsak), nightTime, true);
-        mTimes[TIMES_FAJR] = this.adjustHLTime(mTimes[TIMES_FAJR], mTimes[TIMES_SUNRISE], (mParams.fajr), nightTime, true);
-        mTimes[TIMES_ISHA] = this.adjustHLTime(mTimes[TIMES_ISHA], mTimes[TIMES_SUNSET], (mParams.isha), nightTime, false);
-        mTimes[TIMES_MAGHRIB] = this.adjustHLTime(mTimes[TIMES_MAGHRIB], mTimes[TIMES_SUNSET], (mParams.maghrib), nightTime, false);
+        mTimes[Constants.TIMES_IMSAK] = this.adjustHLTime(mTimes[Constants.TIMES_IMSAK], mTimes[Constants.TIMES_SUNRISE], (mParams.imsak), nightTime, true);
+        mTimes[Constants.TIMES_FAJR] = this.adjustHLTime(mTimes[Constants.TIMES_FAJR], mTimes[Constants.TIMES_SUNRISE], (mParams.fajr), nightTime, true);
+        mTimes[Constants.TIMES_ISHA] = this.adjustHLTime(mTimes[Constants.TIMES_ISHA], mTimes[Constants.TIMES_SUNSET], (mParams.isha), nightTime, false);
+        mTimes[Constants.TIMES_MAGHRIB] = this.adjustHLTime(mTimes[Constants.TIMES_MAGHRIB], mTimes[Constants.TIMES_SUNSET], (mParams.maghrib), nightTime, false);
     }
 
     /**
@@ -307,9 +306,9 @@ public class PrayTimes implements Serializable {
     private double nightPortion(double angle, double night) {
         double method = mParams.highLats;
         double portion = 1.0 / 2.0;// MidNight
-        if (method == HIGHLAT_ANGLEBASED)
+        if (method == Constants.HIGHLAT_ANGLEBASED)
             portion = 1.0 / 60.0 * angle;
-        if (method == HIGHLAT_ONESEVENTH)
+        if (method == Constants.HIGHLAT_ONESEVENTH)
             portion = 1.0 / 7.0;
         return portion * night;
     }
@@ -323,14 +322,14 @@ public class PrayTimes implements Serializable {
             mTimes[i] = mTimes[i] / 24.0;
         }
 
-        mTimes[TIMES_IMSAK] = this.sunAngleTime((mParams.imsak), mTimes[TIMES_IMSAK], true);
-        mTimes[TIMES_FAJR] = this.sunAngleTime((mParams.fajr), mTimes[TIMES_FAJR], true);
-        mTimes[TIMES_SUNRISE] = this.sunAngleTime(this.riseSetAngle(), mTimes[TIMES_SUNRISE], true);
-        mTimes[TIMES_ZAWAL] = this.midDay(mTimes[TIMES_ZAWAL]);
-        mTimes[TIMES_ASR] = this.asrTime(mParams.asrJuristic, mTimes[TIMES_ASR]);
-        mTimes[TIMES_SUNSET] = this.sunAngleTime(this.riseSetAngle(), mTimes[TIMES_SUNSET], false);
-        mTimes[TIMES_MAGHRIB] = this.sunAngleTime((mParams.maghrib), mTimes[TIMES_MAGHRIB], false);
-        mTimes[TIMES_ISHA] = this.sunAngleTime((mParams.isha), mTimes[TIMES_MAGHRIB], false);
+        mTimes[Constants.TIMES_IMSAK] = this.sunAngleTime((mParams.imsak), mTimes[Constants.TIMES_IMSAK], true);
+        mTimes[Constants.TIMES_FAJR] = this.sunAngleTime((mParams.fajr), mTimes[Constants.TIMES_FAJR], true);
+        mTimes[Constants.TIMES_SUNRISE] = this.sunAngleTime(this.riseSetAngle(), mTimes[Constants.TIMES_SUNRISE], true);
+        mTimes[Constants.TIMES_ZAWAL] = this.midDay(mTimes[Constants.TIMES_ZAWAL]);
+        mTimes[Constants.TIMES_ASR] = this.asrTime(mParams.asrJuristic, mTimes[Constants.TIMES_ASR]);
+        mTimes[Constants.TIMES_SUNSET] = this.sunAngleTime(this.riseSetAngle(), mTimes[Constants.TIMES_SUNSET], false);
+        mTimes[Constants.TIMES_MAGHRIB] = this.sunAngleTime((mParams.maghrib), mTimes[Constants.TIMES_MAGHRIB], false);
+        mTimes[Constants.TIMES_ISHA] = this.sunAngleTime((mParams.isha), mTimes[Constants.TIMES_MAGHRIB], false);
     }
 
     /**

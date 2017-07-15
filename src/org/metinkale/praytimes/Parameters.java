@@ -21,13 +21,10 @@ be useful, but WITHOUT ANY WARRANTY.
 PLEASE DO NOT REMOVE THIS COPYRIGHT BLOCK.
 
 */
-package com.metinkale.praytime;
+package org.metinkale.praytimes;
 
 import java.io.Serializable;
 import java.util.TimeZone;
-
-import static com.metinkale.praytime.Constants.HIGHLAT_NONE;
-import static com.metinkale.praytime.Constants.JURISTIC_STANDARD;
 
 /**
  * Configuration for PrayTimes
@@ -57,8 +54,8 @@ public class Parameters implements Serializable {
         maghribMin = method.maghribMin;
         ishaMin = method.ishaMin;
         midnight = method.midnight;
-        highLats = HIGHLAT_NONE;
+        highLats = Constants.HIGHLAT_NONE;
         timeZone = TimeZone.getDefault();
-        asrJuristic = JURISTIC_STANDARD;
+        asrJuristic = Constants.JURISTIC_STANDARD;
     }
 }

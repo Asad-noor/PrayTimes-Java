@@ -21,10 +21,7 @@ be useful, but WITHOUT ANY WARRANTY.
 PLEASE DO NOT REMOVE THIS COPYRIGHT BLOCK.
 
 */
-package com.metinkale.praytime;
-
-import static com.metinkale.praytime.Constants.MIDNIGHT_JAFARI;
-import static com.metinkale.praytime.Constants.MIDNIGHT_STANDARD;
+package org.metinkale.praytimes;
 
 
 /**
@@ -35,31 +32,31 @@ public enum Method {
     /**
      * Muslim World League
      */
-    MWL(18, 0, true, 17, false, MIDNIGHT_STANDARD),
+    MWL(18, 0, true, 17, false, Constants.MIDNIGHT_STANDARD),
     /**
      * Islamic Society of North America (ISNA)
      */
-    ISNA(15, 0, true, 15, false, MIDNIGHT_STANDARD),
+    ISNA(15, 0, true, 15, false, Constants.MIDNIGHT_STANDARD),
     /**
      * Egyptian General Authority of Survey
      */
-    Egypt(19.5, 0, true, 17.5, false, MIDNIGHT_STANDARD),
+    Egypt(19.5, 0, true, 17.5, false, Constants.MIDNIGHT_STANDARD),
     /**
      * Umm Al-Qura University, Makkah
      */
-    Makkah(18.5, 0, true, 90, true, MIDNIGHT_STANDARD),
+    Makkah(18.5, 0, true, 90, true, Constants.MIDNIGHT_STANDARD),
     /**
      * University of Islamic Sciences, Karachi
      */
-    Karachi(18, 0, true, 18, false, MIDNIGHT_STANDARD),
+    Karachi(18, 0, true, 18, false, Constants.MIDNIGHT_STANDARD),
     /**
      * Institute of Geophysics, University of Tehran
      */
-    Tehran(17.7, 4.5, false, 14, false, MIDNIGHT_JAFARI),
+    Tehran(17.7, 4.5, false, 14, false, Constants.MIDNIGHT_JAFARI),
     /**
      * Shia Ithna-Ashari, Leva Institute, Qum
      */
-    Jafari(16, 4, false, 14, false, MIDNIGHT_JAFARI);
+    Jafari(16, 4, false, 14, false, Constants.MIDNIGHT_JAFARI);
 
 
     final boolean maghribMin, ishaMin;//if true double values are in minutes, otherwhise in degrees
