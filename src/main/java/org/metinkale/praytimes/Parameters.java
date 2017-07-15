@@ -38,7 +38,7 @@ public class Parameters implements Serializable {
     protected int midnight;
     protected TimeZone timeZone;
     protected int asrJuristic;
-    protected double[] tune = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    protected double[] tune = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     protected Parameters() {
         this(Method.MWL);

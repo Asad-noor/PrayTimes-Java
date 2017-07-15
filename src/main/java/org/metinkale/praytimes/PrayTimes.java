@@ -24,16 +24,13 @@ PLEASE DO NOT REMOVE THIS COPYRIGHT BLOCK.
 package org.metinkale.praytimes;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-import static java.lang.Double.isNaN;
 
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class PrayTimes implements Serializable {
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("hh:mm");
     private double mLat, mLng, mElv;
     private double mJDate;
 
@@ -44,8 +41,8 @@ public class PrayTimes implements Serializable {
     private int mDay;
     private long mTimestamp;
 
-    private String[] mStringTimes;
-    private double[] mTimes;
+    private transient String[] mStringTimes;
+    private transient double[] mTimes;
 
     public PrayTimes() {
     }
@@ -93,11 +90,20 @@ public class PrayTimes implements Serializable {
     }
 
     /**
-     * return prayer mTimes for a given date
+     * return prayer time for a given date and time
      *
      * @return array of Times
      */
-    public String[] getTimes() {
+    public String getTime(int time) {
+        return getTimes()[time];
+    }
+
+    /**
+     * return prayer times for a given date
+     *
+     * @return array of Times
+     */
+    private String[] getTimes() {
         if (mStringTimes != null) return mStringTimes;
 
         double[] doubles = getTimesAsDouble();
@@ -149,6 +155,8 @@ public class PrayTimes implements Serializable {
     /**
      * Calculates the qibla time, if you turn yourself to the sun at that time, you are turned to qibla
      * Note: does not exists everywhere
+     *
+     * @return Qibla Time
      */
     public QiblaTime getQiblaTime() {
         getTimes();
@@ -219,7 +227,7 @@ public class PrayTimes implements Serializable {
      */
     private void computeTimes() {
         // default times
-        mTimes = new double[]{5, 5, 6, 12, 12, 13, 18, 18, 18, 0};
+        mTimes = new double[]{5, 5, 6, 12, 12, 13, 13, 13, 18, 18, 18, 0};
 
         computePrayerTimes();
 
@@ -291,7 +299,7 @@ public class PrayTimes implements Serializable {
         double timeDiff = (ccw) ?
                 this.timeDiff(time, base) :
                 this.timeDiff(base, time);
-        if (isNaN(time) || timeDiff > portion)
+        if (Double.isNaN(time) || timeDiff > portion)
             time = base + (ccw ? -portion : portion);
         return time;
     }
@@ -326,7 +334,10 @@ public class PrayTimes implements Serializable {
         mTimes[Constants.TIMES_FAJR] = this.sunAngleTime((mParams.fajr), mTimes[Constants.TIMES_FAJR], true);
         mTimes[Constants.TIMES_SUNRISE] = this.sunAngleTime(this.riseSetAngle(), mTimes[Constants.TIMES_SUNRISE], true);
         mTimes[Constants.TIMES_ZAWAL] = this.midDay(mTimes[Constants.TIMES_ZAWAL]);
-        mTimes[Constants.TIMES_ASR] = this.asrTime(mParams.asrJuristic, mTimes[Constants.TIMES_ASR]);
+        mTimes[Constants.TIMES_ASR_SHAFII] = this.asrTime(Constants.JURISTIC_STANDARD, mTimes[Constants.TIMES_ASR_SHAFII]);
+        mTimes[Constants.TIMES_ASR_HANAFI] = this.asrTime(Constants.JURISTIC_HANAFI, mTimes[Constants.TIMES_ASR_HANAFI]);
+        mTimes[Constants.TIMES_ASR] = mParams.asrJuristic != Constants.JURISTIC_STANDARD ?
+                mTimes[Constants.TIMES_ASR_HANAFI] : mTimes[Constants.TIMES_ASR_SHAFII];
         mTimes[Constants.TIMES_SUNSET] = this.sunAngleTime(this.riseSetAngle(), mTimes[Constants.TIMES_SUNSET], false);
         mTimes[Constants.TIMES_MAGHRIB] = this.sunAngleTime((mParams.maghrib), mTimes[Constants.TIMES_MAGHRIB], false);
         mTimes[Constants.TIMES_ISHA] = this.sunAngleTime((mParams.isha), mTimes[Constants.TIMES_MAGHRIB], false);
@@ -550,25 +561,6 @@ public class PrayTimes implements Serializable {
         clearTimes();
     }
 
-    /**
-     * tuneTimes all mTimes (+-). In Hours
-     *
-     * @param imsak    Imsak Time+-
-     * @param fajr     Fajr Time+-
-     * @param sunrise  Sunrise+-
-     * @param zawal    Zawal+-
-     * @param dhuhr    Dhuhr+-
-     * @param asr      Asr+-
-     * @param sunset   Sunset+-
-     * @param maghrib  Maghrib+-
-     * @param isha     Isha+-
-     * @param midnight Midnight+-
-     */
-    public void tune(double imsak, double fajr, double sunrise, double zawal, double dhuhr, double asr,
-                     double sunset, double maghrib, double isha, double midnight, double qiblatime) {
-        mParams.tune = new double[]{imsak, fajr, sunrise, zawal, dhuhr, asr, sunset, maghrib, isha, midnight, qiblatime};
-        clearTimes();
-    }
 
     /**
      * tuneTimes single time

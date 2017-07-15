@@ -14,12 +14,25 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.artifactory'
 apply plugin: 'com.jfrog.bintray'
 
-group 'org.metinkale'
-version '0.9'
+def currentVersion = "0.9";
+def currentVersionInfo = "prerelease"
 
+group 'org.metinkale'
+version currentVersion
 sourceCompatibility = 1.7
 
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier 'sources'
+    from sourceSets.main.allJava
+}
 
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
+}
+
+jar.dependsOn sourcesJar
+jar.dependsOn javadocJar
 
 bintray {
     user = bintray_user
@@ -29,10 +42,10 @@ bintray {
         name = 'PrayTimes-Java'
         licenses = ['LGPL-3.0']
         vcsUrl = 'https://github.com/metinkale38/praytimes-java.git'
-        configurations = ['archives']
+        publications = ['MyPublication']
         version {
-            name = '0.9'
-            desc = "first release"
+            name = currentVersion
+            desc = currentVersionInfo
             gpg {
                 sign = true
                 passphrase = bintray_gpgpass
@@ -41,13 +54,45 @@ bintray {
     }
 }
 
+
+def pomConfig = {
+    licenses {
+        license {
+            name "GNU LESSER GENERAL PUBLIC LICENSE, Version 3.0"
+            url "https://www.gnu.org/licenses/lgpl-3.0.txt"
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            id "metinkale38"
+            name "Metin Kale"
+            email "metinkale38@gmail.com"
+        }
+    }
+
+    scm {
+        url "https://github.com/metinkale38/PrayTimes-Java.git"
+    }
+}
+
+
 publishing {
     publications {
         MyPublication(MavenPublication) {
             from components.java
+            artifact sourcesJar
+            artifact javadocJar
             groupId 'org.metinkale'
             artifactId 'praytimes'
-            version '0.9'
+            version currentVersion
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', 'Pray Times provides a set of handy functions to calculate prayer times for any location around the world, based on a variety of calculation methods currently used in Muslim communities.')
+                root.appendNode('name', 'PrayTimes-Java')
+                root.appendNode('url', 'https://github.com/metinkale38/PrayTimes-Java')
+                root.children().last() + pomConfig
+            }
         }
     }
 }
