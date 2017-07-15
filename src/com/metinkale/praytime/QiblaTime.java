@@ -63,7 +63,7 @@ public class QiblaTime {
     }
 
     /**
-     * if you turn yourself away from the sun you are in qibla direction
+     * if you turn yourself away from the sun at that time you are in qibla direction
      *
      * @return time in HH:MM or null, if it does not exists in your location
      */

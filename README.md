@@ -4,8 +4,22 @@ Java Port of PrayTime Library from http://praytimes.org/
 ## Description (from praytimes.org)
 Pray Times provides a set of handy functions to calculate prayer times for any location around the world, based on a variety of calculation methods currently used in Muslim communities.
 
-The code is originally written in JavaScript. This manual provides information on how to use the code on a web-page or a JavaScript-based application to display prayer times
- 
+---
+For more information about how the calculation works you can visit [this page](http://praytimes.org/wiki/Prayer_Times_Calculation).
+
+Changes/Additions compared to the original JS-Library:
+- added Zawal Time/Solar Noon (slightly before Dhuhr)
+- added Qibla Time Calculation
+
+#### What is Qibla Time?
+The qibla time helps you to determine the exact direction to qibla based on the time and sun position.
+
+This Library contains 4 types of Qibla time:
+- Front qibla time: if you turn yourself to sun at that time, you are on qibla qirection
+- Left qibla time: if you take the sun to your left at that time, you are on qibla direction
+- Right qibla time: if you take the sun to your right at that time, you are on qibla direction
+- Back qibla Time: if you turn yourself away from the sun at that time you are in qibla direction
+
 ## License
 
 PrayTimes.java: Prayer Times Calculator (ver 2.3)
