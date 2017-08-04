@@ -124,7 +124,7 @@ public class PrayTimes implements Serializable {
      * @return HH:MM
      */
     private String toString(double time) {
-        return az((int) Math.floor(time)) + ":" + az((int) Math.round(time * 60 % 60));
+        return az((int) Math.floor(time)) + ":" + az((int) (  Math.round(time * 60) )% 60);
     }
 
     /**
