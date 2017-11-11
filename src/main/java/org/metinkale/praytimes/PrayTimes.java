@@ -28,13 +28,12 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 
-
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class PrayTimes implements Serializable {
     private double mLat, mLng, mElv;
     private double mJDate;
 
-    private Parameters mParams = new Parameters();
+    private final Parameters mParams = new Parameters();
 
     private int mYear;
     private int mMonth;
@@ -92,6 +91,7 @@ public class PrayTimes implements Serializable {
     /**
      * return prayer time for a given date and time
      *
+     * @param time TIME_ from Constants
      * @return array of Times
      */
     public String getTime(int time) {
@@ -124,7 +124,7 @@ public class PrayTimes implements Serializable {
      * @return HH:MM
      */
     private String toString(double time) {
-        return az((int) Math.floor(time)) + ":" + az((int) (  Math.round(time * 60) )% 60);
+        return az((int) Math.floor(time)) + ":" + az((int) (Math.round(time * 60)) % 60);
     }
 
     /**
@@ -439,7 +439,7 @@ public class PrayTimes implements Serializable {
      * @param method calculation method
      */
     public void setMethod(Method method) {
-        this.mParams = new Parameters(method);
+        this.mParams.setMethod(method);
         clearTimes();
     }
 
@@ -581,4 +581,63 @@ public class PrayTimes implements Serializable {
     private double getTimeZoneOffset() {
         return mParams.timeZone.getOffset(mTimestamp) / 1000 / 60 / 60.0;
     }
+
+
+    public int getAsrJuristic() {
+        return mParams.asrJuristic;
+    }
+
+
+    public int getHighLatsAdjustment() {
+        return mParams.highLats;
+    }
+
+    public double getLatitude() {
+        return mLat;
+    }
+
+
+    public double getLongitude() {
+        return mLng;
+    }
+
+
+    public double getElevation() {
+        return mElv;
+    }
+
+    public double getImsakValue() {
+        return mParams.imsak;
+    }
+
+    public boolean isImsakTimeInMins() {
+        return mParams.imsakMin;
+    }
+
+    public double getFajrDegrees() {
+        return mParams.fajr;
+    }
+
+    public boolean isMaghribTimeInMins() {
+        return mParams.maghribMin;
+    }
+
+
+    public boolean isIshaTimeInMins() {
+        return mParams.ishaMin;
+    }
+
+    public double getDhuhrMins() {
+        return mParams.dhuhr;
+    }
+
+    public double getMaghribValue() {
+        return mParams.maghrib;
+    }
+
+    public double getIshaValue() {
+        return mParams.isha;
+    }
+
+
 }

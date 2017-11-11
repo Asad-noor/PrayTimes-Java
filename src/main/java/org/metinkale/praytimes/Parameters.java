@@ -36,26 +36,20 @@ public class Parameters implements Serializable {
     protected double imsak, fajr, dhuhr, maghrib, isha;
     protected int highLats;
     protected int midnight;
-    protected TimeZone timeZone;
+    protected TimeZone timeZone = TimeZone.getDefault();
     protected int asrJuristic;
     protected double[] tune = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     protected Parameters() {
-        this(Method.MWL);
+        setMethod(Method.MWL);
     }
 
-    protected Parameters(Method method) {
-        imsak = 10;
-        imsakMin = true;
+    protected void setMethod(Method method) {
         fajr = method.fajr;
-        dhuhr = 0;
         isha = method.isha;
         maghrib = method.maghrib;
         maghribMin = method.maghribMin;
         ishaMin = method.ishaMin;
         midnight = method.midnight;
-        highLats = Constants.HIGHLAT_NONE;
-        timeZone = TimeZone.getDefault();
-        asrJuristic = Constants.JURISTIC_STANDARD;
     }
 }
