@@ -30,18 +30,18 @@ import java.util.TimeZone;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class PrayTimes implements Serializable {
-    private double mLat, mLng, mElv;
-    private double mJDate;
+    private double lat, lng, elv;
+    private double jdate;
 
-    private final Parameters mParams = new Parameters();
+    private final Parameters params = new Parameters();
 
-    private int mYear;
-    private int mMonth;
-    private int mDay;
-    private long mTimestamp;
+    private int year;
+    private int month;
+    private int day;
+    private long timestamp;
 
-    private transient String[] mStringTimes;
-    private transient double[] mTimes;
+    private transient String[] stringTimes;
+    private transient double[] times;
 
     public PrayTimes() {
     }
@@ -55,9 +55,9 @@ public class PrayTimes implements Serializable {
      * @param elv Elevation
      */
     public void setCoordinates(double lat, double lng, double elv) {
-        mLat = lat;
-        mLng = lng;
-        mElv = elv;
+        this.lat = lat;
+        this.lng = lng;
+        this.elv = elv;
         clearTimes();
     }
 
@@ -65,8 +65,8 @@ public class PrayTimes implements Serializable {
      * clears cached times
      */
     private void clearTimes() {
-        mTimes = null;
-        mStringTimes = null;
+        times = null;
+        stringTimes = null;
     }
 
 
@@ -78,13 +78,13 @@ public class PrayTimes implements Serializable {
      * @param day   Date/Day of Month
      */
     public void setDate(int year, int month, int day) {
-        if (year == mYear && mMonth == month && mDay == mMonth) return;
-        mYear = year;
-        mMonth = month;
-        mDay = day;
-        Calendar cal = Calendar.getInstance(mParams.timeZone);
-        cal.set(mYear, mMonth - 1, mDay);
-        mTimestamp = cal.getTimeInMillis();
+        if (year == this.year && this.month == month && this.day == this.month) return;
+        this.year = year;
+        this.month = month;
+        this.day = day;
+        Calendar cal = Calendar.getInstance(params.timeZone);
+        cal.set(this.year, this.month - 1, this.day);
+        timestamp = cal.getTimeInMillis();
         clearTimes();
     }
 
@@ -104,17 +104,17 @@ public class PrayTimes implements Serializable {
      * @return array of Times
      */
     private String[] getTimes() {
-        if (mStringTimes != null) return mStringTimes;
+        if (stringTimes != null) return stringTimes;
 
         double[] doubles = getTimesAsDouble();
 
         //convert to HH:mm
-        mStringTimes = new String[doubles.length];
-        for (int i = 0; i < mStringTimes.length; i++) {
+        stringTimes = new String[doubles.length];
+        for (int i = 0; i < stringTimes.length; i++) {
             if (doubles[i] > 24) doubles[i] -= 24;
-            mStringTimes[i] = toString(doubles[i]);
+            stringTimes[i] = toString(doubles[i]);
         }
-        return mStringTimes;
+        return stringTimes;
     }
 
     /**
@@ -139,17 +139,17 @@ public class PrayTimes implements Serializable {
 
 
     /**
-     * return prayer mTimes for a given date as double values
+     * return prayer times for a given date as double values
      *
      * @return array of Times
      */
     private double[] getTimesAsDouble() {
-        if (mTimes != null) return mTimes;
-        mJDate = julian(mDay, mMonth, mDay) - mLng / (15.0 * 24.0);
+        if (times != null) return times;
+        jdate = julian(day, month, day) - lng / (15.0 * 24.0);
 
         computeTimes();
         tuneTimes();
-        return mTimes;
+        return times;
     }
 
     /**
@@ -160,13 +160,13 @@ public class PrayTimes implements Serializable {
      */
     public QiblaTime getQiblaTime() {
         getTimes();
-        Calendar cal = Calendar.getInstance(mParams.timeZone);
-        cal.set(mYear, mMonth - 1, mDay, 12, 0, 0);
+        Calendar cal = Calendar.getInstance(params.timeZone);
+        cal.set(year, month - 1, day, 12, 0, 0);
         long[] qibla = new long[4];
-        qibla[0] = QiblaTimeCalculator.findQiblaTime(cal.getTimeInMillis(), mLat, mLng, 0);
-        qibla[1] = QiblaTimeCalculator.findQiblaTime(cal.getTimeInMillis(), mLat, mLng, Math.PI / 2);
-        qibla[2] = QiblaTimeCalculator.findQiblaTime(cal.getTimeInMillis(), mLat, mLng, -Math.PI / 2);
-        qibla[3] = QiblaTimeCalculator.findQiblaTime(cal.getTimeInMillis(), mLat, mLng, Math.PI);
+        qibla[0] = QiblaTimeCalculator.findQiblaTime(cal.getTimeInMillis(), lat, lng, 0);
+        qibla[1] = QiblaTimeCalculator.findQiblaTime(cal.getTimeInMillis(), lat, lng, Math.PI / 2);
+        qibla[2] = QiblaTimeCalculator.findQiblaTime(cal.getTimeInMillis(), lat, lng, -Math.PI / 2);
+        qibla[3] = QiblaTimeCalculator.findQiblaTime(cal.getTimeInMillis(), lat, lng, Math.PI);
         double[] qiblaD = new double[4];
         String[] qiblaS = new String[4];
         for (int i = 0; i < 4; i++) {
@@ -174,7 +174,7 @@ public class PrayTimes implements Serializable {
             qiblaD[i] = cal.get(Calendar.HOUR_OF_DAY)
                     + cal.get(Calendar.MINUTE) / 60d
                     + cal.get(Calendar.SECOND) / 3600d;
-            if (qiblaD[i] < mTimes[Constants.TIMES_SUNRISE] || qiblaD[i] > mTimes[Constants.TIMES_SUNSET]) {
+            if (qiblaD[i] < times[Constants.TIMES_SUNRISE] || qiblaD[i] > times[Constants.TIMES_SUNSET]) {
                 qiblaD[i] = 0;
                 qiblaS[i] = null;
             } else {
@@ -196,30 +196,30 @@ public class PrayTimes implements Serializable {
      * Tune times according to user settings
      */
     private void tuneTimes() {
-        for (int i = 0; i < mTimes.length; i++) {
-            mTimes[i] += mParams.tune[i];
+        for (int i = 0; i < times.length; i++) {
+            times[i] += params.tune[i];
         }
     }
 
 
     /**
-     * convert Gregorian date to Julian mDay
+     * convert Gregorian date to Julian day
      * Ref: Astronomical Algorithms by Jean Meeus
      *
-     * @param year  mYear
-     * @param month mMonth
-     * @param day   mDay
-     * @return julian mDay
+     * @param year  year
+     * @param month month
+     * @param day   day
+     * @return julian day
      */
     private static double julian(int year, int month, int day) {
         if (month <= 2) {
             year -= 1;
             month += 12;
         }
-        double A = Math.floor(year / 100.0);
-        double B = (2 - A + Math.floor(A / 4.0));
+        double a = Math.floor(year / 100.0);
+        double b = (2 - a + Math.floor(a / 4.0));
 
-        return (Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + B - 1524.5);
+        return (Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + b - 1524.5);
     }
 
     /**
@@ -227,21 +227,21 @@ public class PrayTimes implements Serializable {
      */
     private void computeTimes() {
         // default times
-        mTimes = new double[]{5, 5, 6, 12, 12, 13, 13, 13, 18, 18, 18, 0};
+        times = new double[]{5, 5, 6, 12, 12, 13, 13, 13, 18, 18, 18, 0};
 
         computePrayerTimes();
 
         adjustTimes();
 
         // add midnight time
-        mTimes[Constants.TIMES_MIDNIGHT] = (mParams.midnight == Constants.MIDNIGHT_JAFARI) ?
-                mTimes[Constants.TIMES_SUNSET] + this.timeDiff(mTimes[Constants.TIMES_SUNSET], mTimes[Constants.TIMES_FAJR]) / 2.0 :
-                mTimes[Constants.TIMES_SUNSET] + this.timeDiff(mTimes[Constants.TIMES_SUNSET], mTimes[Constants.TIMES_FAJR]) / 2.0;
+        times[Constants.TIMES_MIDNIGHT] = (params.midnight == Constants.MIDNIGHT_JAFARI) ?
+                times[Constants.TIMES_SUNSET] + this.timeDiff(times[Constants.TIMES_SUNSET], times[Constants.TIMES_FAJR]) / 2.0 :
+                times[Constants.TIMES_SUNSET] + this.timeDiff(times[Constants.TIMES_SUNSET], times[Constants.TIMES_SUNRISE]) / 2.0;
 
     }
 
     /**
-     * compute the difference between two mTimes
+     * compute the difference between two times
      *
      * @param time1 Time 1
      * @param time2 Time 2
@@ -256,32 +256,32 @@ public class PrayTimes implements Serializable {
      */
     private void adjustTimes() {
         double offset = getTimeZoneOffset();
-        for (int i = 0; i < mTimes.length; i++) {
-            mTimes[i] += offset - mLng / 15.0;
+        for (int i = 0; i < times.length; i++) {
+            times[i] += offset - lng / 15.0;
         }
 
-        if (mParams.highLats != Constants.HIGHLAT_NONE)
+        if (params.highLats != Constants.HIGHLAT_NONE)
             adjustHighLats();
 
-        if (mParams.imsakMin)
-            mTimes[Constants.TIMES_IMSAK] = mTimes[Constants.TIMES_FAJR] - (mParams.imsak) / 60.0;
-        if (mParams.maghribMin)
-            mTimes[Constants.TIMES_MAGHRIB] = mTimes[Constants.TIMES_SUNSET] + (mParams.maghrib) / 60.0;
-        if (mParams.ishaMin)
-            mTimes[Constants.TIMES_ISHA] = mTimes[Constants.TIMES_MAGHRIB] + (mParams.isha) / 60.0;
-        mTimes[Constants.TIMES_DHUHR] = mTimes[Constants.TIMES_ZAWAL] + (mParams.dhuhr) / 60.0;
+        if (params.imsakMin)
+            times[Constants.TIMES_IMSAK] = times[Constants.TIMES_FAJR] - (params.imsak) / 60.0;
+        if (params.maghribMin)
+            times[Constants.TIMES_MAGHRIB] = times[Constants.TIMES_SUNSET] + (params.maghrib) / 60.0;
+        if (params.ishaMin)
+            times[Constants.TIMES_ISHA] = times[Constants.TIMES_MAGHRIB] + (params.isha) / 60.0;
+        times[Constants.TIMES_DHUHR] = times[Constants.TIMES_ZAWAL] + (params.dhuhr) / 60.0;
     }
 
     /**
      * adjust times for locations in higher latitudes
      */
     private void adjustHighLats() {
-        double nightTime = this.timeDiff(mTimes[Constants.TIMES_SUNSET], mTimes[Constants.TIMES_SUNRISE]);
+        double nightTime = this.timeDiff(times[Constants.TIMES_SUNSET], times[Constants.TIMES_SUNRISE]);
 
-        mTimes[Constants.TIMES_IMSAK] = this.adjustHLTime(mTimes[Constants.TIMES_IMSAK], mTimes[Constants.TIMES_SUNRISE], (mParams.imsak), nightTime, true);
-        mTimes[Constants.TIMES_FAJR] = this.adjustHLTime(mTimes[Constants.TIMES_FAJR], mTimes[Constants.TIMES_SUNRISE], (mParams.fajr), nightTime, true);
-        mTimes[Constants.TIMES_ISHA] = this.adjustHLTime(mTimes[Constants.TIMES_ISHA], mTimes[Constants.TIMES_SUNSET], (mParams.isha), nightTime, false);
-        mTimes[Constants.TIMES_MAGHRIB] = this.adjustHLTime(mTimes[Constants.TIMES_MAGHRIB], mTimes[Constants.TIMES_SUNSET], (mParams.maghrib), nightTime, false);
+        times[Constants.TIMES_IMSAK] = this.adjustHLTime(times[Constants.TIMES_IMSAK], times[Constants.TIMES_SUNRISE], (params.imsak), nightTime, true);
+        times[Constants.TIMES_FAJR] = this.adjustHLTime(times[Constants.TIMES_FAJR], times[Constants.TIMES_SUNRISE], (params.fajr), nightTime, true);
+        times[Constants.TIMES_ISHA] = this.adjustHLTime(times[Constants.TIMES_ISHA], times[Constants.TIMES_SUNSET], (params.isha), nightTime, false);
+        times[Constants.TIMES_MAGHRIB] = this.adjustHLTime(times[Constants.TIMES_MAGHRIB], times[Constants.TIMES_SUNSET], (params.maghrib), nightTime, false);
     }
 
     /**
@@ -305,14 +305,14 @@ public class PrayTimes implements Serializable {
     }
 
     /**
-     * the night portion used for adjusting mTimes in higher latitudes
+     * the night portion used for adjusting times in higher latitudes
      *
      * @param angle angle
      * @param night night time
      * @return night portion
      */
     private double nightPortion(double angle, double night) {
-        double method = mParams.highLats;
+        double method = params.highLats;
         double portion = 1.0 / 2.0;// MidNight
         if (method == Constants.HIGHLAT_ANGLEBASED)
             portion = 1.0 / 60.0 * angle;
@@ -322,25 +322,25 @@ public class PrayTimes implements Serializable {
     }
 
     /**
-     * compute prayer mTimes at given julian date
+     * compute prayer times at given julian date
      */
     private void computePrayerTimes() {
-        // convert hours to mDay portions
-        for (int i = 0; i < mTimes.length; i++) {
-            mTimes[i] = mTimes[i] / 24.0;
+        // convert hours to day portions
+        for (int i = 0; i < times.length; i++) {
+            times[i] = times[i] / 24.0;
         }
 
-        mTimes[Constants.TIMES_IMSAK] = this.sunAngleTime((mParams.imsak), mTimes[Constants.TIMES_IMSAK], true);
-        mTimes[Constants.TIMES_FAJR] = this.sunAngleTime((mParams.fajr), mTimes[Constants.TIMES_FAJR], true);
-        mTimes[Constants.TIMES_SUNRISE] = this.sunAngleTime(this.riseSetAngle(), mTimes[Constants.TIMES_SUNRISE], true);
-        mTimes[Constants.TIMES_ZAWAL] = this.midDay(mTimes[Constants.TIMES_ZAWAL]);
-        mTimes[Constants.TIMES_ASR_SHAFII] = this.asrTime(Constants.JURISTIC_STANDARD, mTimes[Constants.TIMES_ASR_SHAFII]);
-        mTimes[Constants.TIMES_ASR_HANAFI] = this.asrTime(Constants.JURISTIC_HANAFI, mTimes[Constants.TIMES_ASR_HANAFI]);
-        mTimes[Constants.TIMES_ASR] = mParams.asrJuristic != Constants.JURISTIC_STANDARD ?
-                mTimes[Constants.TIMES_ASR_HANAFI] : mTimes[Constants.TIMES_ASR_SHAFII];
-        mTimes[Constants.TIMES_SUNSET] = this.sunAngleTime(this.riseSetAngle(), mTimes[Constants.TIMES_SUNSET], false);
-        mTimes[Constants.TIMES_MAGHRIB] = this.sunAngleTime((mParams.maghrib), mTimes[Constants.TIMES_MAGHRIB], false);
-        mTimes[Constants.TIMES_ISHA] = this.sunAngleTime((mParams.isha), mTimes[Constants.TIMES_MAGHRIB], false);
+        times[Constants.TIMES_IMSAK] = this.sunAngleTime((params.imsak), times[Constants.TIMES_IMSAK], true);
+        times[Constants.TIMES_FAJR] = this.sunAngleTime((params.fajr), times[Constants.TIMES_FAJR], true);
+        times[Constants.TIMES_SUNRISE] = this.sunAngleTime(this.riseSetAngle(), times[Constants.TIMES_SUNRISE], true);
+        times[Constants.TIMES_ZAWAL] = this.midDay(times[Constants.TIMES_ZAWAL]);
+        times[Constants.TIMES_ASR_SHAFII] = this.asrTime(Constants.JURISTIC_STANDARD, times[Constants.TIMES_ASR_SHAFII]);
+        times[Constants.TIMES_ASR_HANAFI] = this.asrTime(Constants.JURISTIC_HANAFI, times[Constants.TIMES_ASR_HANAFI]);
+        times[Constants.TIMES_ASR] = params.asrJuristic != Constants.JURISTIC_STANDARD ?
+                times[Constants.TIMES_ASR_HANAFI] : times[Constants.TIMES_ASR_SHAFII];
+        times[Constants.TIMES_SUNSET] = this.sunAngleTime(this.riseSetAngle(), times[Constants.TIMES_SUNSET], false);
+        times[Constants.TIMES_MAGHRIB] = this.sunAngleTime((params.maghrib), times[Constants.TIMES_MAGHRIB], false);
+        times[Constants.TIMES_ISHA] = this.sunAngleTime((params.isha), times[Constants.TIMES_MAGHRIB], false);
     }
 
     /**
@@ -351,8 +351,8 @@ public class PrayTimes implements Serializable {
      * @return asr time
      */
     private double asrTime(int factor, double time) {
-        double decl = this.sunPositionDeclination(mJDate + time);
-        double angle = -DMath.arccot(factor + DMath.tan(Math.abs(mLat - decl)));
+        double decl = this.sunPositionDeclination(jdate + time);
+        double angle = -DMath.arccot(factor + DMath.tan(Math.abs(lat - decl)));
         return this.sunAngleTime(angle, time, false);
     }
 
@@ -366,21 +366,21 @@ public class PrayTimes implements Serializable {
      * @return time
      */
     private double sunAngleTime(double angle, double time, boolean ccw) {
-        double decl = this.sunPositionDeclination(mJDate + time);
+        double decl = this.sunPositionDeclination(jdate + time);
         double noon = this.midDay(time);
-        double t = 1.0 / 15.0 * DMath.arccos((-DMath.sin(angle) - DMath.sin(decl) * DMath.sin(mLat)) /
-                (DMath.cos(decl) * DMath.cos(mLat)));
+        double t = 1.0 / 15.0 * DMath.arccos((-DMath.sin(angle) - DMath.sin(decl) * DMath.sin(lat)) /
+                (DMath.cos(decl) * DMath.cos(lat)));
         return noon + (ccw ? -t : t);
     }
 
     /**
-     * compute mid-mDay time
+     * compute mid-day time
      *
      * @param time default time
      * @return midday time
      */
     private double midDay(double time) {
-        double eqt = this.equationOfTime(mJDate + time);
+        double eqt = this.equationOfTime(jdate + time);
         return DMath.fixHour(12 - eqt);
     }
 
@@ -392,13 +392,13 @@ public class PrayTimes implements Serializable {
      * @return equation of time
      */
     private double equationOfTime(double jd) {
-        double D = jd - 2451545.0;
-        double g = DMath.fixAngle(357.529 + 0.98560028 * D);
-        double q = DMath.fixAngle(280.459 + 0.98564736 * D);
-        double L = DMath.fixAngle(q + 1.915 * DMath.sin(g) + 0.020 * DMath.sin(2 * g));
-        double e = 23.439 - 0.00000036 * D;
-        double RA = DMath.arctan2(DMath.cos(e) * DMath.sin(L), DMath.cos(L)) / 15;
-        return q / 15.0 - DMath.fixHour(RA);
+        double d = jd - 2451545.0;
+        double g = DMath.fixAngle(357.529 + 0.98560028 * d);
+        double q = DMath.fixAngle(280.459 + 0.98564736 * d);
+        double l = DMath.fixAngle(q + 1.915 * DMath.sin(g) + 0.020 * DMath.sin(2 * g));
+        double e = 23.439 - 0.00000036 * d;
+        double ra = DMath.arctan2(DMath.cos(e) * DMath.sin(l), DMath.cos(l)) / 15;
+        return q / 15.0 - DMath.fixHour(ra);
     }
 
     /**
@@ -409,12 +409,12 @@ public class PrayTimes implements Serializable {
      * @return declination angle of sun
      */
     private double sunPositionDeclination(double jd) {
-        double D = jd - 2451545.0;
-        double g = DMath.fixAngle(357.529 + 0.98560028 * D);
-        double q = DMath.fixAngle(280.459 + 0.98564736 * D);
-        double L = DMath.fixAngle(q + 1.915 * DMath.sin(g) + 0.020 * DMath.sin(2 * g));
-        double e = 23.439 - 0.00000036 * D;
-        return DMath.arcsin(DMath.sin(e) * DMath.sin(L));
+        double d = jd - 2451545.0;
+        double g = DMath.fixAngle(357.529 + 0.98560028 * d);
+        double q = DMath.fixAngle(280.459 + 0.98564736 * d);
+        double l = DMath.fixAngle(q + 1.915 * DMath.sin(g) + 0.020 * DMath.sin(2 * g));
+        double e = 23.439 - 0.00000036 * d;
+        return DMath.arcsin(DMath.sin(e) * DMath.sin(l));
     }
 
 
@@ -426,7 +426,7 @@ public class PrayTimes implements Serializable {
     private double riseSetAngle() {
         //double earthRad = 6371009; // in meters
         //double angle = DMath.arccos(earthRad/(earthRad+ elv));
-        double angle = 0.0347 * Math.sqrt(mElv); // an approximation
+        double angle = 0.0347 * Math.sqrt(elv); // an approximation
         return 0.833 + angle;
     }
 
@@ -439,7 +439,7 @@ public class PrayTimes implements Serializable {
      * @param method calculation method
      */
     public void setMethod(Method method) {
-        this.mParams.setMethod(method);
+        this.params.setMethod(method);
         clearTimes();
     }
 
@@ -450,8 +450,8 @@ public class PrayTimes implements Serializable {
      * @param isMin true if value is in mins, false if it is in degreess
      */
     public void setImsakTime(double value, boolean isMin) {
-        mParams.imsak = value;
-        mParams.imsakMin = isMin;
+        params.imsak = value;
+        params.imsakMin = isMin;
         clearTimes();
     }
 
@@ -461,7 +461,7 @@ public class PrayTimes implements Serializable {
      * @param degrees degrees
      */
     public void setFajrDegrees(double degrees) {
-        mParams.fajr = degrees;
+        params.fajr = degrees;
         clearTimes();
     }
 
@@ -472,7 +472,7 @@ public class PrayTimes implements Serializable {
      * @param mins minutes
      */
     public void setDhuhrMins(double mins) {
-        mParams.dhuhr = mins;
+        params.dhuhr = mins;
         clearTimes();
     }
 
@@ -483,8 +483,8 @@ public class PrayTimes implements Serializable {
      * @param isMin true if value is in mins, false if it is in degreess
      */
     public void setMaghribTime(double value, boolean isMin) {
-        mParams.maghrib = value;
-        mParams.maghribMin = isMin;
+        params.maghrib = value;
+        params.maghribMin = isMin;
         clearTimes();
     }
 
@@ -496,13 +496,13 @@ public class PrayTimes implements Serializable {
      * @param isMin true if value is in mins, false if it is in degreess
      */
     public void setIshaTime(double value, boolean isMin) {
-        mParams.isha = value;
-        mParams.ishaMin = isMin;
+        params.isha = value;
+        params.ishaMin = isMin;
         clearTimes();
     }
 
     /**
-     * In locations at higher latitude, twilight may persist throughout the night during some months of the mYear.
+     * In locations at higher latitude, twilight may persist throughout the night during some months of the year.
      * In these abnormal periods, the determination of Fajr and Isha is not possible using the usual formulas mentioned
      * in the previous section. To overcome this problem, several solutions have been proposed,
      * three of which are described below.
@@ -515,7 +515,7 @@ public class PrayTimes implements Serializable {
      * @param method method
      */
     public void setHighLatsAdjustment(int method) {
-        mParams.highLats = method;
+        params.highLats = method;
         clearTimes();
     }
 
@@ -530,19 +530,19 @@ public class PrayTimes implements Serializable {
      * @param mode mode
      */
     public void setMidnightMode(int mode) {
-        mParams.midnight = mode;
+        params.midnight = mode;
         clearTimes();
     }
 
     /**
-     * TimeZone for mTimes
+     * TimeZone for times
      * <p>
      * Default: {@link TimeZone#getDefault() TimeZone.getDefault()}
      *
      * @param tz Timezone
      */
     public void setTimezone(TimeZone tz) {
-        mParams.timeZone = tz;
+        params.timeZone = tz;
         clearTimes();
     }
 
@@ -557,7 +557,7 @@ public class PrayTimes implements Serializable {
      * @param asr method
      */
     public void setAsrJuristic(int asr) {
-        mParams.asrJuristic = asr;
+        params.asrJuristic = asr;
         clearTimes();
     }
 
@@ -569,7 +569,7 @@ public class PrayTimes implements Serializable {
      * @param tune hours
      */
     public void tune(int time, double tune) {
-        mParams.tune[time] = tune;
+        params.tune[time] = tune;
         clearTimes();
     }
 
@@ -579,64 +579,64 @@ public class PrayTimes implements Serializable {
      * @return time zone offset
      */
     private double getTimeZoneOffset() {
-        return mParams.timeZone.getOffset(mTimestamp) / 1000 / 60 / 60.0;
+        return params.timeZone.getOffset(timestamp) / 1000.0 / 60 / 60;
     }
 
 
     public int getAsrJuristic() {
-        return mParams.asrJuristic;
+        return params.asrJuristic;
     }
 
 
     public int getHighLatsAdjustment() {
-        return mParams.highLats;
+        return params.highLats;
     }
 
     public double getLatitude() {
-        return mLat;
+        return lat;
     }
 
 
     public double getLongitude() {
-        return mLng;
+        return lng;
     }
 
 
     public double getElevation() {
-        return mElv;
+        return elv;
     }
 
     public double getImsakValue() {
-        return mParams.imsak;
+        return params.imsak;
     }
 
     public boolean isImsakTimeInMins() {
-        return mParams.imsakMin;
+        return params.imsakMin;
     }
 
     public double getFajrDegrees() {
-        return mParams.fajr;
+        return params.fajr;
     }
 
     public boolean isMaghribTimeInMins() {
-        return mParams.maghribMin;
+        return params.maghribMin;
     }
 
 
     public boolean isIshaTimeInMins() {
-        return mParams.ishaMin;
+        return params.ishaMin;
     }
 
     public double getDhuhrMins() {
-        return mParams.dhuhr;
+        return params.dhuhr;
     }
 
     public double getMaghribValue() {
-        return mParams.maghrib;
+        return params.maghrib;
     }
 
     public double getIshaValue() {
-        return mParams.isha;
+        return params.isha;
     }
 
 

@@ -31,9 +31,15 @@ import java.util.TimeZone;
  */
 @SuppressWarnings("WeakerAccess")
 public class Parameters implements Serializable {
-    protected boolean imsakMin, maghribMin, ishaMin;//if true double values are in minutes, otherwhise in degrees
+    protected boolean imsakMin = true;
+    protected boolean maghribMin;
+    protected boolean ishaMin;//if true double values are in minutes, otherwhise in degrees
     //dhuhr is always in min, fajr is always in degrees
-    protected double imsak, fajr, dhuhr, maghrib, isha;
+    protected double imsak;
+    protected double fajr;
+    protected double dhuhr;
+    protected double maghrib;
+    protected double isha;
     protected int highLats;
     protected int midnight;
     protected TimeZone timeZone = TimeZone.getDefault();
