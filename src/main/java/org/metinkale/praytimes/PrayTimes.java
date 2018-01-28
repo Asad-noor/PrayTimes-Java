@@ -111,7 +111,8 @@ public class PrayTimes implements Serializable {
         //convert to HH:mm
         stringTimes = new String[doubles.length];
         for (int i = 0; i < stringTimes.length; i++) {
-            if (doubles[i] > 24) doubles[i] -= 24;
+            while (doubles[i] > 24) doubles[i] -= 24;
+            while (doubles[i] < 0) doubles[i] += 24;
             stringTimes[i] = toString(doubles[i]);
         }
         return stringTimes;

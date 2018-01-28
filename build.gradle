@@ -14,7 +14,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.artifactory'
 apply plugin: 'com.jfrog.bintray'
 
-def currentVersion = "0.9.3";
+def currentVersion = "0.9.3.1";
 def currentVersionInfo = "prerelease"
 
 group 'org.metinkale'
